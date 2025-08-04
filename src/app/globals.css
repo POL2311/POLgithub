@@ -1,0 +1,885 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import '@solana/wallet-adapter-react-ui/styles.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 84% 6%; /* Dark Blue/Purple */
+    --foreground: 210 40% 98%; /* Light Gray/White */
+
+    --card: 222 80% 10%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 80% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 195 100% 74%; /* Electric Blue #7DF9FF */
+    --primary-foreground: 222 84% 6%; /* Dark for text on primary */
+
+    --secondary: 217 33% 17%; /* Darker Blue Gray */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 25%;
+    --muted-foreground: 210 40% 60%;
+
+    --accent: 260 60% 55%; /* Vibrant Purple */
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 70% 50%; /* Adjusted for better visibility */
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 22%;
+    --input: 217 33% 22%;
+    --ring: 195 100% 74%; /* Electric Blue for focus rings */
+
+    --radius: 0.5rem;
+
+    /* Sidebar specific colors */
+    --sidebar-background: transparent !important; /* THIS IS KEY FOR SIDEBAR TRANSPARENCY */
+    --sidebar-foreground: 210 40% 85%; /* Slightly brighter text for sidebar */
+    --sidebar-primary: 195 100% 74%; /* Electric blue for active/hover */
+    --sidebar-primary-foreground: 222 84% 6%; /* Dark for text on primary */
+    --sidebar-accent: 222 80% 10%; /* Slightly lighter than sidebar bg for hover */
+    --sidebar-accent-foreground: 195 100% 74%; /* Electric blue text on accent */
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 195 100% 74%;
+    
+    --main-content-background: transparent;
+
+
+    --chart-1: 12 76% 61%; /* Orange */
+    --chart-2: 173 58% 39%; /* Teal/Green */
+    --chart-3: 197 37% 24%; /* Dark Blue for blob variation (can be reused or a new one added) */
+    --chart-4: 43 74% 66%; /* Yellow-Orange */
+    --chart-5: 27 87% 67%; /* Orange-Red/Pinkish */
+
+    /* CSS variables for mouse parallax, default to 0px */
+    --mouse-parallax-x: 0px;
+    --mouse-parallax-y: 0px;
+  }
+
+  .dark {
+    --background: 222 84% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 80% 10%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 80% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 195 100% 74%;
+    --primary-foreground: 222 84% 6%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 25%;
+    --muted-foreground: 210 40% 60%;
+
+    --accent: 260 60% 55%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 22%;
+    --input: 217 33% 22%;
+    --ring: 195 100% 74%;
+    
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    /* Sidebar specific colors for dark theme (same as root for this design) */
+    --sidebar-background: transparent !important; /* THIS IS KEY FOR SIDEBAR TRANSPARENCY */
+    --sidebar-foreground: 210 40% 85%;
+    --sidebar-primary: 195 100% 74%;
+    --sidebar-primary-foreground: 222 84% 6%;
+    --sidebar-accent: 222 80% 10%;
+    --sidebar-accent-foreground: 195 100% 74%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 195 100% 74%;
+
+    --main-content-background: transparent;
+  }
+
+  html {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px; /* Base font size for 1rem */
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: grayscale;
+    font-smooth: never;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    background-color: hsl(var(--background));
+  }
+
+  body {
+    /* bg-background is removed to allow animated background to show */
+    @apply text-foreground;
+    min-height: 100vh;
+    position: relative;
+    transition: background-color 0.3s ease; /* For smooth theme transition if ever needed */
+  }
+
+  /* Animated Blurry Background Container */
+  .animated-blur-bg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2; /* Behind starfield */
+    overflow: hidden; /* Important to contain blobs */
+    pointer-events: none;
+  }
+
+  .blur-blob {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.45; /* Base opacity for blobs - slightly increased */
+    filter: blur(75px); /* Increased blur slightly */
+    will-change: transform, opacity;
+    /* transition for smoother parallax adjustments, if desired, though direct var update is often smooth enough */
+    /* transition: transform 0.1s linear;  */
+  }
+
+  .blob-1 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, hsl(var(--chart-1) / 0.65) 0%, transparent 70%); /* More opaque orange */
+    top: 5%;
+    left: 5%;
+    animation: moveBlob1 28s infinite alternate ease-in-out;
+  }
+  body.background-interaction-active .blob-1 {
+    animation: moveBlob1 28s infinite alternate ease-in-out,
+               blob_click_glow_effect 0.8s ease-out forwards;
+  }
+
+
+  .blob-2 {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, hsl(var(--accent) / 0.55) 0%, transparent 70%); /* Vibrant purple */
+    top: 40%;
+    left: 50%;
+    animation: moveBlob2 32s infinite alternate ease-in-out;
+    animation-delay: -7s;
+  }
+  body.background-interaction-active .blob-2 {
+    animation: moveBlob2 32s infinite alternate ease-in-out -7s,
+               blob_click_glow_effect 0.8s ease-out 0.1s forwards;
+  }
+
+  .blob-3 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, hsl(var(--chart-5) / 0.65) 0%, transparent 70%); /* More opaque orange-red/pinkish */
+    bottom: 10%;
+    right: 10%;
+    animation: moveBlob3 22s infinite alternate ease-in-out;
+    animation-delay: -12s;
+  }
+   body.background-interaction-active .blob-3 {
+    animation: moveBlob3 22s infinite alternate ease-in-out -12s,
+               blob_click_glow_effect 0.8s ease-out 0.2s forwards;
+  }
+
+  .blob-4 {
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(circle, hsl(var(--primary) / 0.55) 0%, transparent 70%); /* Electric blue */
+    top: 20%;
+    right: 5%;
+    animation: moveBlob4 35s infinite alternate ease-in-out;
+    animation-delay: -3s;
+  }
+  body.background-interaction-active .blob-4 {
+    animation: moveBlob4 35s infinite alternate ease-in-out -3s,
+               blob_click_glow_effect 0.8s ease-out 0.05s forwards;
+  }
+
+  .blob-5 {
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, hsl(var(--chart-2) / 0.65) 0%, transparent 70%); /* Teal/Green */
+    bottom: 5%;
+    left: 25%;
+    animation: moveBlob5 25s infinite alternate ease-in-out;
+    animation-delay: -10s;
+  }
+  body.background-interaction-active .blob-5 {
+    animation: moveBlob5 25s infinite alternate ease-in-out -10s,
+               blob_click_glow_effect 0.8s ease-out 0.15s forwards;
+  }
+
+  .blob-6 { /* New blob */
+    width: 520px;
+    height: 520px;
+    background: radial-gradient(circle, hsl(var(--chart-4) / 0.6) 0%, transparent 70%); /* Yellow-Orange */
+    top: 15%;
+    left: 70%;
+    animation: moveBlob6 29s infinite alternate ease-in-out;
+    animation-delay: -15s;
+  }
+  body.background-interaction-active .blob-6 {
+    animation: moveBlob6 29s infinite alternate ease-in-out -15s,
+               blob_click_glow_effect 0.8s ease-out 0.25s forwards;
+  }
+
+  .blob-7 { /* New blob */
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, hsl(var(--chart-3) / 0.7) 0%, transparent 70%); /* Dark Blue - more intense */
+    bottom: 20%;
+    left: 10%;
+    animation: moveBlob7 33s infinite alternate ease-in-out;
+    animation-delay: -5s;
+  }
+   body.background-interaction-active .blob-7 {
+    animation: moveBlob7 33s infinite alternate ease-in-out -5s,
+               blob_click_glow_effect 0.8s ease-out 0.1s forwards;
+  }
+
+  @keyframes blob_click_glow_effect {
+    0%, 100% { filter: blur(75px) drop-shadow(0 0 0px hsl(var(--primary)/ 0)); }
+    50% { filter: blur(65px) drop-shadow(0 0 30px hsl(var(--primary) / 0.7)); }
+  }
+
+
+  @keyframes moveBlob1 {
+    0% { transform: translate(calc(0px + var(--mouse-parallax-x, 0px)), calc(0px + var(--mouse-parallax-y, 0px))) scale(1); opacity: 0.4; }
+    50% { transform: translate(calc(130px + var(--mouse-parallax-x, 0px)), calc(70px + var(--mouse-parallax-y, 0px))) scale(1.3); opacity: 0.5; }
+    100% { transform: translate(calc(-70px + var(--mouse-parallax-x, 0px)), calc(-130px + var(--mouse-parallax-y, 0px))) scale(0.8); opacity: 0.35; }
+  }
+
+  @keyframes moveBlob2 {
+    0% { transform: translate(calc(0px + var(--mouse-parallax-x, 0px)), calc(0px + var(--mouse-parallax-y, 0px))) scale(1); opacity: 0.35; }
+    50% { transform: translate(calc(-180px + var(--mouse-parallax-x, 0px)), calc(130px + var(--mouse-parallax-y, 0px))) scale(0.95); opacity: 0.45; }
+    100% { transform: translate(calc(70px + var(--mouse-parallax-x, 0px)), calc(-70px + var(--mouse-parallax-y, 0px))) scale(1.2); opacity: 0.3; }
+  }
+
+  @keyframes moveBlob3 {
+    0% { transform: translate(calc(0px + var(--mouse-parallax-x, 0px)), calc(0px + var(--mouse-parallax-y, 0px))) scale(1); opacity: 0.5; }
+    50% { transform: translate(calc(100px + var(--mouse-parallax-x, 0px)), calc(-80px + var(--mouse-parallax-y, 0px))) scale(1.25); opacity: 0.6; }
+    100% { transform: translate(calc(-50px + var(--mouse-parallax-x, 0px)), calc(60px + var(--mouse-parallax-y, 0px))) scale(0.85); opacity: 0.4; }
+  }
+
+  @keyframes moveBlob4 {
+    0% { transform: translate(calc(0px + var(--mouse-parallax-x, 0px)), calc(0px + var(--mouse-parallax-y, 0px))) scale(1); opacity: 0.35; }
+    50% { transform: translate(calc(-90px + var(--mouse-parallax-x, 0px)), calc(50px + var(--mouse-parallax-y, 0px))) scale(1.15); opacity: 0.45; }
+    100% { transform: translate(calc(50px + var(--mouse-parallax-x, 0px)), calc(-90px + var(--mouse-parallax-y, 0px))) scale(0.9); opacity: 0.3; }
+  }
+
+  @keyframes moveBlob5 {
+    0% { transform: translate(calc(0px + var(--mouse-parallax-x, 0px)), calc(0px + var(--mouse-parallax-y, 0px))) scale(1); opacity: 0.4; }
+    50% { transform: translate(calc(60px + var(--mouse-parallax-x, 0px)), calc(80px + var(--mouse-parallax-y, 0px))) scale(1.2); opacity: 0.5; }
+    100% { transform: translate(calc(-80px + var(--mouse-parallax-x, 0px)), calc(-40px + var(--mouse-parallax-y, 0px))) scale(0.75); opacity: 0.35; }
+  }
+
+  @keyframes moveBlob6 {
+    0% { transform: translate(calc(0px + var(--mouse-parallax-x, 0px)), calc(0px + var(--mouse-parallax-y, 0px))) scale(1); opacity: 0.4; }
+    50% { transform: translate(calc(-100px + var(--mouse-parallax-x, 0px)), calc(-50px + var(--mouse-parallax-y, 0px))) scale(1.2); opacity: 0.55; }
+    100% { transform: translate(calc(50px + var(--mouse-parallax-y, 0px)), calc(100px + var(--mouse-parallax-y, 0px))) scale(0.85); opacity: 0.3; }
+  }
+
+  @keyframes moveBlob7 {
+    0% { transform: translate(calc(0px + var(--mouse-parallax-x, 0px)), calc(0px + var(--mouse-parallax-y, 0px))) scale(1); opacity: 0.45; }
+    50% { transform: translate(calc(150px + var(--mouse-parallax-x, 0px)), calc(80px + var(--mouse-parallax-y, 0px))) scale(0.9); opacity: 0.6; }
+    100% { transform: translate(calc(-80px + var(--mouse-parallax-x, 0px)), calc(-150px + var(--mouse-parallax-y, 0px))) scale(1.1); opacity: 0.35; }
+  }
+
+
+  /* Animated Starfield Background */
+  .starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Behind all page content, but on top of blur blobs */
+    pointer-events: none;
+  }
+
+  @keyframes move-stars-slow {
+    0% { background-position-y: 0px; }
+    100% { background-position-y: 1000px; }
+  }
+  @keyframes move-stars-slow-burst {
+    0% { background-position-y: 0px; }
+    100% { background-position-y: 1800px; } /* Faster burst */
+  }
+
+  @keyframes move-stars-medium {
+    0% { background-position-y: 0px; }
+    100% { background-position-y: 1500px; }
+  }
+  @keyframes move-stars-medium-burst {
+    0% { background-position-y: 0px; }
+    100% { background-position-y: 2500px; } /* Faster burst */
+  }
+
+  @keyframes move-stars-fast {
+    0% { background-position-y: 0px; }
+    100% { background-position-y: 2000px; }
+  }
+  @keyframes move-stars-fast-burst {
+    0% { background-position-y: 0px; }
+    100% { background-position-y: 3000px; } /* Faster burst */
+  }
+
+
+  .stars-slow {
+    background-image:
+      radial-gradient(1.4px 1.4px at 20px 50px, hsl(var(--foreground) / 0.4), transparent), /* Brighter */
+      radial-gradient(2.0px 2.0px at 120px 180px, hsl(var(--foreground) / 0.35), transparent),
+      radial-gradient(1.0px 1.0px at 250px 100px, hsl(var(--foreground) / 0.45), transparent),
+      radial-gradient(2.4px 2.4px at 350px 320px, hsl(var(--foreground) / 0.42), transparent),
+      radial-gradient(1.2px 1.2px at 80px 280px, hsl(var(--foreground) / 0.38), transparent),
+      radial-gradient(0.8px 0.8px at 180px 20px, hsl(var(--foreground) / 0.32), transparent),
+      radial-gradient(1.7px 1.7px at 300px 200px, hsl(var(--foreground) / 0.4), transparent);
+    background-repeat: repeat;
+    background-size: 450px 450px;
+    animation: move-stars-slow 200s linear infinite;
+  }
+  body.background-interaction-active .stars-slow {
+    animation: move-stars-slow-burst 0.8s linear forwards;
+  }
+
+
+  .stars-medium {
+    background-image:
+      radial-gradient(1.1px 1.1px at 35px 80px, hsl(var(--foreground) / 0.6), transparent), /* Brighter */
+      radial-gradient(1.5px 1.5px at 140px 160px, hsl(var(--foreground) / 0.55), transparent),
+      radial-gradient(0.9px 0.9px at 230px 220px, hsl(var(--foreground) / 0.52), transparent),
+      radial-gradient(1.8px 1.8px at 20px 280px, hsl(var(--foreground) / 0.65), transparent),
+      radial-gradient(1.3px 1.3px at 290px 60px, hsl(var(--foreground) / 0.58), transparent),
+      radial-gradient(0.7px 0.7px at 100px 30px, hsl(var(--foreground) / 0.5), transparent),
+      radial-gradient(1.6px 1.6px at 200px 310px, hsl(var(--foreground) / 0.62), transparent);
+    background-repeat: repeat;
+    background-size: 400px 400px;
+    animation: move-stars-medium 150s linear infinite;
+  }
+  body.background-interaction-active .stars-medium {
+    animation: move-stars-medium-burst 0.8s linear 0.05s forwards; /* Slight delay */
+  }
+
+  .stars-fast {
+    background-image:
+      radial-gradient(0.7px 0.7px at 10px 30px, hsl(var(--foreground) / 0.9), transparent), /* Brighter */
+      radial-gradient(1.0px 1.0px at 100px 70px, hsl(var(--foreground) / 0.95), transparent),
+      radial-gradient(0.5px 0.5px at 180px 120px, hsl(var(--foreground) / 0.85), transparent),
+      radial-gradient(0.9px 0.9px at 5px 160px, hsl(var(--foreground) / 0.98), transparent),
+      radial-gradient(0.6px 0.6px at 130px 20px, hsl(var(--foreground) / 0.88), transparent),
+      radial-gradient(1.1px 1.1px at 60px 190px, hsl(var(--foreground) / 1.0), transparent),
+      radial-gradient(0.8px 0.8px at 210px 90px, hsl(var(--foreground) / 0.9), transparent);
+    background-repeat: repeat;
+    background-size: 300px 300px;
+    animation: move-stars-fast 100s linear infinite;
+  }
+  body.background-interaction-active .stars-fast {
+    animation: move-stars-fast-burst 0.8s linear 0.1s forwards; /* Slight delay */
+  }
+
+
+  /* Page content load-in animation */
+  @keyframes fadeInSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeInSlideUp {
+    animation: fadeInSlideUp 0.5s ease-out forwards;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+}
+
+/* Styles for custom social buttons from SocialButtons.module.css, now integrated here */
+.SocialBtn {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: transparent;
+  position: relative;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+}
+
+.SocialBtn .SocialSvgContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  backdrop-filter: blur(0px);
+  letter-spacing: 0.8px; /* This might not be desired for icons */
+  border-radius: 10px;
+  transition: all 0.3s;
+  border: 1px solid rgba(156, 156, 156, 0.466);
+  z-index: 1;
+}
+
+.SocialBtn .SocialBG {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  border-radius: 10px;
+  pointer-events: none;
+  transition: all 0.3s;
+}
+
+.SocialBtn:hover .SocialBG {
+  transform: rotate(35deg);
+  transform-origin: bottom;
+}
+
+.SocialBtn:hover .SocialSvgContainer {
+  border: 1px solid rgba(226, 226, 226, 0.466);
+  background-color: rgba(204, 204, 204, 0.466);
+  backdrop-filter: blur(4px);
+}
+
+
+
+.SocialBG-twitter {
+  background: #181818; /* Twitter/X Black */
+}
+
+.SocialBG-pumpfun {
+  background: hsl(var(--accent));
+}
+
+.SocialSvgContainer-pumpfun {
+  background-image: url("/images/pumplogo.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* From Uiverse.io by Ashon-G */
+.uiverse {
+  --duration: 7s;
+  --easing: linear;
+  /* Adapted colors to theme */
+  --c-color-1: hsl(var(--primary) / 0.7);
+  --c-color-2: hsl(var(--accent));
+  --c-color-3: hsl(var(--chart-5));
+  --c-color-4: hsl(var(--primary) / 0.7);
+
+  --c-shadow: hsl(var(--primary) / 0.5);
+  --c-shadow-inset-top: hsl(var(--primary) / 0.9);
+  --c-shadow-inset-bottom: hsl(var(--primary-foreground) / 0.8);
+
+  --c-radial-inner: hsl(var(--primary));
+  --c-radial-outer: hsl(var(--accent));
+
+  --c-color: hsl(var(--primary-foreground));
+
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  outline: none;
+  position: relative;
+  cursor: pointer;
+  border: none;
+  display: table;
+  border-radius: 24px;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  color: var(--c-color);
+  background: radial-gradient(
+    circle,
+    var(--c-radial-inner),
+    var(--c-radial-outer) 80%
+  );
+  box-shadow: 0 0 14px var(--c-shadow);
+  /* ADDED FOR IMPROVEMENT */
+  transition: box-shadow 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.uiverse:before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 24px;
+  box-shadow:
+    inset 0 3px 12px var(--c-shadow-inset-top),
+    inset 0 -3px 4px var(--c-shadow-inset-bottom);
+}
+
+.uiverse .wrapper {
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  overflow: hidden;
+  border-radius: 24px;
+  min-width: 132px;
+  padding: 12px 0;
+}
+
+.uiverse .wrapper span {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+}
+
+.uiverse:hover {
+  --duration: 1400ms; /* Existing: speeds up inner circles */
+  /* ADDED FOR IMPROVEMENT */
+  box-shadow: 0 0 25px hsl(var(--primary) / 0.8), 0 0 15px hsl(var(--accent) / 0.6); /* Enhanced shadow */
+  transform: translateY(-3px); /* Lift effect */
+}
+
+/* ADDED FOR IMPROVEMENT */
+.uiverse:active {
+  transform: translateY(-1px) scale(0.98); /* Press down effect */
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.7); /* Slightly reduced shadow on active */
+}
+
+
+.uiverse .wrapper .circle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  filter: blur(var(--blur, 8px));
+  background: var(--background, transparent);
+  transform: translate(var(--x, 0), var(--y, 0)) translateZ(0);
+  animation: var(--animation, none) var(--duration) var(--easing) infinite;
+}
+
+.uiverse .wrapper .circle.circle-1,
+.uiverse .wrapper .circle.circle-9,
+.uiverse .wrapper .circle.circle-10 {
+  --background: var(--c-color-4);
+}
+
+.uiverse .wrapper .circle.circle-3,
+.uiverse .wrapper .circle.circle-4 {
+  --background: var(--c-color-2);
+  --blur: 14px;
+}
+
+.uiverse .wrapper .circle.circle-5,
+.uiverse .wrapper .circle.circle-6 {
+  --background: var(--c-color-3);
+  --blur: 16px;
+}
+
+.uiverse .wrapper .circle.circle-2,
+.uiverse .wrapper .circle.circle-7,
+.uiverse .wrapper .circle.circle-8,
+.uiverse .wrapper .circle.circle-11,
+.uiverse .wrapper .circle.circle-12 {
+  --background: var(--c-color-1);
+  --blur: 12px;
+}
+
+.uiverse .wrapper .circle.circle-1 {
+  --x: 0;
+  --y: -40px;
+  --animation: circle-1;
+}
+
+.uiverse .wrapper .circle.circle-2 {
+  --x: 92px;
+  --y: 8px;
+  --animation: circle-2;
+}
+
+.uiverse .wrapper .circle.circle-3 {
+  --x: -12px;
+  --y: -12px;
+  --animation: circle-3;
+}
+
+.uiverse .wrapper .circle.circle-4 {
+  --x: 80px;
+  --y: -12px;
+  --animation: circle-4;
+}
+
+.uiverse .wrapper .circle.circle-5 {
+  --x: 12px;
+  --y: -4px;
+  --animation: circle-5;
+}
+
+.uiverse .wrapper .circle.circle-6 {
+  --x: 56px;
+  --y: 16px;
+  --animation: circle-6;
+}
+
+.uiverse .wrapper .circle.circle-7 {
+  --x: 8px;
+  --y: 28px;
+  --animation: circle-7;
+}
+
+.uiverse .wrapper .circle.circle-8 {
+  --x: 28px;
+  --y: -4px;
+  --animation: circle-8;
+}
+
+.uiverse .wrapper .circle.circle-9 {
+  --x: 20px;
+  --y: -12px;
+  --animation: circle-9;
+}
+
+.uiverse .wrapper .circle.circle-10 {
+  --x: 64px;
+  --y: 16px;
+  --animation: circle-10;
+}
+
+.uiverse .wrapper .circle.circle-11 {
+  --x: 4px;
+  --y: 4px;
+  --animation: circle-11;
+}
+
+.uiverse .wrapper .circle.circle-12 {
+  --blur: 14px;
+  --x: 52px;
+  --y: 4px;
+  --animation: circle-12;
+}
+
+@keyframes circle-1 {
+  33% {
+    transform: translate(0px, 16px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(12px, 64px) translateZ(0);
+  }
+}
+
+@keyframes circle-2 {
+  33% {
+    transform: translate(80px, -10px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(72px, -48px) translateZ(0);
+  }
+}
+
+@keyframes circle-3 {
+  33% {
+    transform: translate(20px, 12px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(12px, 4px) translateZ(0);
+  }
+}
+
+@keyframes circle-4 {
+  33% {
+    transform: translate(76px, -12px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(112px, -8px) translateZ(0);
+  }
+}
+
+@keyframes circle-5 {
+  33% {
+    transform: translate(84px, 28px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(40px, -32px) translateZ(0);
+  }
+}
+
+@keyframes circle-6 {
+  33% {
+    transform: translate(28px, -16px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(76px, -56px) translateZ(0);
+  }
+}
+
+@keyframes circle-7 {
+  33% {
+    transform: translate(8px, 28px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(20px, -60px) translateZ(0);
+  }
+}
+
+@keyframes circle-8 {
+  33% {
+    transform: translate(32px, -4px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(56px, -20px) translateZ(0);
+  }
+}
+
+@keyframes circle-9 {
+  33% {
+    transform: translate(20px, -12px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(80px, -8px) translateZ(0);
+  }
+}
+
+@keyframes circle-10 {
+  33% {
+    transform: translate(68px, 20px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(100px, 28px) translateZ(0);
+  }
+}
+
+@keyframes circle-11 {
+  33% {
+    transform: translate(4px, 4px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(68px, 20px) translateZ(0);
+  }
+}
+
+@keyframes circle-12 {
+  33% {
+    transform: translate(56px, 0px) translateZ(0);
+  }
+
+  66% {
+    transform: translate(60px, -32px) translateZ(0);
+  }
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  /* background: #23294840; */ /* Using a more transparent version of muted or border */
+  background: hsl(var(--muted) / 0.25);
+}
+::-webkit-scrollbar-thumb {
+  /* background: #3a425a99; */ /* Using accent or primary */
+  background: hsl(var(--accent) / 0.6);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--accent) / 0.8);
+}
+
+body {
+  width: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;  /* en lugar de margin-left: 20% */
+}
+
+.repsilo {
+  width: max-content;
+  height: auto;
+}
+
+main, body {
+  overflow-y: auto;
+  height: auto;
+  padding-bottom: 250px;
+}
+
+/* Wallet Adapter Button Overrides */
+/* These are now correctly placed after the base wallet adapter styles are imported */
+.wallet-adapter-button {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  height: auto !important;
+  padding: 10px 16px !important;
+  width: 100%; /* Make button full width by default */
+}
+
+.wallet-adapter-button:not([disabled]):hover {
+  background-color: hsl(var(--primary) / 0.8) !important;
+}
+
+.wallet-adapter-button-trigger {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 12px !important;
+  width: 100%;
+}
+.wallet-adapter-button-trigger:not([disabled]):hover {
+    background-color: hsl(var(--primary) / 0.8) !important;
+}
+
+.wallet-adapter-modal-wrapper {
+    background-color: hsl(var(--background) / 0.8) !important;
+    backdrop-filter: blur(10px);
+}
+.wallet-adapter-modal-title {
+    font-family: 'Press Start 2P', monospace !important;
+    color: hsl(var(--primary)) !important;
+}
+
+.wallet-adapter-modal-list li button {
+    font-family: 'Press Start 2P', monospace !important;
+    background-color: hsl(var(--muted)) !important;
+    color: hsl(var(--foreground)) !important;
+}
+.wallet-adapter-modal-list li button:hover {
+    background-color: hsl(var(--accent)) !important;
+    color: hsl(var(--accent-foreground)) !important;
+}
